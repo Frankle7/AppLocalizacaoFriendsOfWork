@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:app_dos_mlk/app/modules/shared/screen_fundo/background_all_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
@@ -19,9 +20,17 @@ class _CadastroPageState extends State<CadastroPage> {
     );
 
     if (result != null) {
+      File file = File(result.files.single.path!);
+
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = 'asset/banco-pan.png';
+      final savedImage = await file.copy('${appDir.path}/$fileName');
+
       setState(() {
-        imagePath = result.files.single.path!;
+        imagePath = savedImage.path;
       });
+    } else {
+      print('usuario cancelou a selecao de imagem');
     }
   }
 
@@ -33,15 +42,21 @@ class _CadastroPageState extends State<CadastroPage> {
           BackgroundAllPage(),
           Center(
             child: Transform.translate(
-              offset: const Offset(0, -240),
+              offset: const Offset(100, -240),
               child: Row(
                 children: [
                   Container(
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
+                      image: imagePath != null
+                          ? DecorationImage(
+                              image: FileImage(File(imagePath!)),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                       shape: BoxShape.circle,
-                      color: Colors.blue,
+                      color: Colors.white,
                     ),
                     child: imagePath != null
                         ? ClipRRect(
@@ -53,23 +68,21 @@ class _CadastroPageState extends State<CadastroPage> {
                           )
                         : null,
                   ),
-
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  // Botão de upload
-                  Positioned(
-                    top: 160,
-                    right: 40,
-                    child: ElevatedButton(
-                      onPressed: _uploadImage,
-                      child: Text('Fazer Upload de Imagem'),
-                    ),
-                  ),
                 ],
               ),
             ),
           ),
+          Center(
+            // Botão de upload
+            child: Transform.translate(
+              offset: const Offset(70, -160),
+              child: ElevatedButton.icon(
+                onPressed: _uploadImage,
+                icon: const Icon(Icons.cloud_upload),
+                label: Text(''), 
+              ),
+            ),
+          )
         ],
       ),
     );
